@@ -1,0 +1,28 @@
+CC2530 ZNP radio driver 
+
+1. Reference Documents 
+   TI CC2530-ZNP Interface Specification
+   TI Z-Stack API
+   TI Z-Stack Developer's Guide
+
+2. Known issues
+   ZNP serial API seems not supporting the following features currently:
+   (1) AF multi-cast data request (corrected, it could support by AF_DATA_REQ_EXT)
+       There is a AF_DATA_REQUEST only for unicast or broadcast. Just like XBee! Why do they always do things in a wrong way!
+       After reviewing the ZNP source code, the MT_AfDataRequest() in MT_AF.c could be modified to support multicast data
+       request and the frame format should be also modified. Maybe creating a new frame type is better.
+   (2) Group management
+       Group management is not exposed through ZDO interface. 
+       ZCL support need be added. 
+   (3) Default transport interface
+       The default transport interface is SPI enabled in hal_board_cfg.h.
+       Ln92~93 should be modified to enable UART.
+       Flow control should be disabled for USB-serial adapter usage in function
+       znpInit() located in znp_app.c file.
+   (4) Simple_Desc_rsp with wrong data [fixed]:
+       We set 0x5A via Z-tool, but when send request we got the response with DeviceVer=0xA0.
+       We set 0x02 via Z-tool, but when send request we got the response with DeviceVer=0x20.
+       
+       Seems there is some bit shift error either in Z-tool or Z-stack firmware.
+       After checking the document, the version value takes higher 4bits of DeviceVer returned.
+       The value range is 0x01~0x0f. SO there is no error. Zpi code updated for this.
