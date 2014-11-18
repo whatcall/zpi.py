@@ -1,6 +1,6 @@
-''' 
+""" 
     CC2530-ZNP firmware radio tests
-'''
+"""
 import sys
 import serial
 #import struct
@@ -123,13 +123,13 @@ ZPI_AREQ_EVENT_WAITING_TIMEOUT = 3.000  #3 secs
 zpi_areq_data = {}
 
 def zpi_areq_event_clear(zpi_cmd):
-    ''' clear the zpi_cmd AREQ event '''
+    """ clear the zpi_cmd AREQ event """
     global zpi_areq_events
     if zpi_cmd in zpi_areq_events:
         zpi_areq_events[zpi_cmd].clear() 
 
 def zpi_areq_event_set(zpi_cmd):
-    ''' set zpi_cmd event '''
+    """ set zpi_cmd event """
     global zpi_areq_events
     if zpi_cmd not in zpi_areq_events:
         zpi_areq_events[zpi_cmd] = threading.Event()
@@ -137,7 +137,7 @@ def zpi_areq_event_set(zpi_cmd):
     zpi_areq_events[zpi_cmd].set()
     
 def zpi_areq_event_wait(zpi_cmd, timeout = ZPI_AREQ_EVENT_WAITING_TIMEOUT):
-    ''' wait the zpi_cmd event '''
+    """ wait the zpi_cmd event """
     global zpi_areq_events
     if zpi_cmd not in zpi_areq_events:
         zpi_areq_events[zpi_cmd] = threading.Event()
@@ -145,13 +145,13 @@ def zpi_areq_event_wait(zpi_cmd, timeout = ZPI_AREQ_EVENT_WAITING_TIMEOUT):
     return zpi_areq_events[zpi_cmd].wait(timeout)
 
 def zpi_areq_data_set(zpi_cmd, rx_data):
-    ''' set the zpi_areq_data with rx_data '''
+    """ set the zpi_areq_data with rx_data """
     #TODO:need lock ??
     global zpi_areq_data
     zpi_areq_data[zpi_cmd] = rx_data
     
 def zpi_areq_data_get(zpi_cmd):
-    ''' get the zpi_areq_data of zpi_cmd '''
+    """ get the zpi_areq_data of zpi_cmd """
     #TODO:need lock ??    
     global zpi_areq_data
     if zpi_cmd in zpi_areq_data:
@@ -160,7 +160,7 @@ def zpi_areq_data_get(zpi_cmd):
         return None
 
 def zpi_sys_reset_test(zpi, serial_port):
-    '''local device reset request'''
+    """local device reset request"""
     log.info('Reset the CC2530-ZNP module...')
     
     zpi.sys_reset_req(ResetType.SOFT_RESET)
@@ -171,7 +171,7 @@ def zpi_sys_reset_test(zpi, serial_port):
         sys.exit()
     
 def zpi_sys_version_test(zpi):
-    ''' get local device system version test '''
+    """ get local device system version test """
     log.info('Request ZNP system version...')
     try:
         (transport_rev, product_id, major_rel, minor_rel, 
@@ -182,7 +182,7 @@ def zpi_sys_version_test(zpi):
         log.error('Failed')  
 
 def zpi_sys_read_adc_test(zpi):
-    ''' system read adc test '''
+    """ system read adc test """
     log.info('Read Adc channel 6...')
     try:
         adc_value = zpi.sys_adc_read(6, AdcResolution._12_BIT)
@@ -191,7 +191,7 @@ def zpi_sys_read_adc_test(zpi):
         log.error('Failed')
 
 def zpi_sys_gpio_test(zpi):
-    ''' system gpio test '''
+    """ system gpio test """
     log.info('Read Gpio pins...')
     try:
         gpio_value = zpi.sys_gpio(GpioOperation.READ, 0x00)
@@ -200,7 +200,7 @@ def zpi_sys_gpio_test(zpi):
         log.error('Failed')
     
 def zpi_sys_random_test(zpi):
-    ''' system random test '''
+    """ system random test """
     log.info('Get a random value...')
     try:
         random_value = zpi.sys_random()
@@ -209,7 +209,7 @@ def zpi_sys_random_test(zpi):
         log.error('Failed')
         
 def zpi_zb_get_device_info_test(zpi):
-    ''' get device information: PanID, NwkAddr, Channel etc. '''
+    """ get device information: PanID, NwkAddr, Channel etc. """
     log.info('Get device information...')
     try:
         device_state = zpi.zb_get_device_info(DeviceInfoParameter.STATE)
@@ -227,7 +227,7 @@ def zpi_zb_get_device_info_test(zpi):
         log.error('Failed!')
  
 def zpi_zb_read_config_test(zpi):
-    ''' zb_read_config test '''
+    """ zb_read_config test """
     #read some configurations from ZNP device for future checking usage
     log.info('Read configuration parameters (ZCD_NV_XXX)...')
     try:
@@ -253,11 +253,11 @@ def zpi_zb_read_config_test(zpi):
 def zpi_zb_write_config_test(zpi, logical_type, 
                              startup_clear_state = False,
                              startup_clear_config = False):
-    '''  
+    """  
         Configuration interface
         write minimal configuration set: logical_type, pan_id, channel_list when
         first time startup. 
-    '''
+    """
     log.info('Write configuration parameters (ZCD_NV_XXX)...')
     status = ZpiStatus.Z_SUCCESS
     try:
@@ -301,10 +301,10 @@ def zpi_zb_write_config_test(zpi, logical_type,
      
 def zpi_zb_start_request_test(zpi, nwk_reset = False, 
                               logical_type = LogicalType.COORDINATOR):
-    ''' 
+    """ 
         test zb_start_request, 
         nwk_reset: if is True, ZNP needs to reset its network state.
-    '''    
+    """    
     global  zb_start_confirmed
 
     #TODO:If network parameters changed, need to restart the device again with 
@@ -325,10 +325,10 @@ def zpi_zb_start_request_test(zpi, nwk_reset = False,
         return #quit    
 
 def zpi_zb_app_reg_req_test(zpi):    
-    '''
+    """
         Simple API: use this Simple interface to register a default App endpoint 
         and then start the device
-    '''
+    """
     log.info('SAPI application register...')
     
     global sapi_apps
@@ -358,14 +358,14 @@ def zpi_zb_app_reg_req_test(zpi):
       
     
 def zpi_zb_permit_joining_request_test(zpi, dst_addr, timeout):
-    ''' zb_permit_joining_request() test'''
+    """ zb_permit_joining_request() test"""
     log.info('Permit Joining Request test...') 
     
     #the default permit joining is always on.
     zpi.zb_permit_joining_request(dst_addr, timeout)  
     
 def zpi_zb_bind_device_test(zpi):
-    ''' zb_bind_device() test '''
+    """ zb_bind_device() test """
     log.info('Bind device test...')
     #first set router 1 in Allow Binding mode
     if device_type == 'light':  #this device should be launched before switch
@@ -396,7 +396,7 @@ def zpi_zb_bind_device_test(zpi):
   
   
 def zpi_zb_transmit_test(zpi, dst_addr, handle, data):
-    ''' send data request through SAPI '''
+    """ send data request through SAPI """
     global zb_send_data_req_cnt
     global zb_send_data_conf_cnt
     
@@ -424,7 +424,7 @@ def zpi_zb_transmit_test(zpi, dst_addr, handle, data):
   
   
 def zpi_af_register_test(zpi):
-    ''' we could use af_register to register more than 1 endpoint apps '''
+    """ we could use af_register to register more than 1 endpoint apps """
     _app = None
     if device_type == 'light':
         _app = SAMPLE_LIGHT
@@ -447,9 +447,9 @@ def zpi_af_register_test(zpi):
         log.info('Status = %s', ZpiStatus.get_name(status))
         
 def zpi_af_transmit_test(zpi):
-    ''' transmit data via AF interface. af_register() must be used to register
+    """ transmit data via AF interface. af_register() must be used to register
         at least one endpoint app before transmit data 
-    '''
+    """
     global device_type
     global af_data_confirmed
     global af_data_conf_cnt, af_data_req_cnt
@@ -495,14 +495,14 @@ def zpi_af_transmit_test(zpi):
     
 
 def zpi_zdo_binding_test(zpi):
-    '''
+    """
         initialize bindings in 2 ways:
         - End device bind
         - Bind/Unbind
         
         SAPI can only bind to default endpoint, here we uses ZDO commands for 
         more options.
-    '''
+    """
     #get device info and profiles
     global device_type, dvice_app, device_app_bind
     
@@ -545,7 +545,7 @@ def zpi_zdo_binding_test(zpi):
    
      
 def zpi_device_discovery_test(zpi, timeout = 10.0):
-    ''' 
+    """ 
         Discovery all devices in network and also mark activity.
         
         refer to TI SWRA203:"Method for Discovering Network Topology.pdf" 
@@ -569,7 +569,7 @@ def zpi_device_discovery_test(zpi, timeout = 10.0):
             - (4) To reduce maintenance work after this time consumed discovery, 
               local application shall monitor the ZDP_DeviceAnnce message once
               new end device joined/rejoined the network. 
-    '''
+    """
     log.info('Discovery network devices...')
     #get local associated device, 
     local_assoc = []
@@ -657,7 +657,7 @@ def zpi_device_discovery_test(zpi, timeout = 10.0):
     return device_list
  
 def zpi_service_discovery_test(zpi, device_list):
-    ''' discovery services running on network devices '''
+    """ discovery services running on network devices """
     #request Simple Descriptor for each active endpoint on specified device 
     #save the result as following format:
     #device_list[] -> device#n['endpoints'] ->endpoint#m->'simple_desc':
@@ -691,7 +691,7 @@ def zpi_service_discovery_test(zpi, device_list):
                 
                 
 def zpi_aps_groups_test(zpi):
-    ''' test these functions: APS_COUNT_ALL_GROUPS '''
+    """ test these functions: APS_COUNT_ALL_GROUPS """
     log.info('APS groups test...')
 
     log.info('add group...')
@@ -792,12 +792,12 @@ def zpi_aps_groups_test(zpi):
         log.info('Removed all groups for endpoint=%d', endpoint)
                
 def zpi_callback(zpi, rx_data):
-    ''' 
+    """ 
         callback handler. Could be implemented as a dispatcher according
         incoming frame's id.
         
         TODO:We need specify individual callback for each message type.
-    '''
+    """
     global zb_send_data_confirmed
     global zb_start_confirmed
     global zb_send_data_conf_cnt
@@ -867,9 +867,9 @@ def zpi_callback(zpi, rx_data):
     elif rx_data['id'] == ZpiCommand.AF_INCOMING_MSG:
         (group_id, cluster_id, src_addr, src_ep, dst_ep, was_broadcast,
             lqi, security_use, time_stamp, trans_seq, data) = zpi.af_incoming_msg_handler(rx_data)
-        log.info('''AF_INCOMING_MSG:group_id=0x%.4X, cluster_id=0x%.4X,
+        log.info("""AF_INCOMING_MSG:group_id=0x%.4X, cluster_id=0x%.4X,
             src_addr=0x%.4X, src_ep=%d, dst_ep=%d, was_broadcast=%d, lqi=%d, 
-            security_use=%d, time_stamp=%d, trans_seq=%d, data=%s''',
+            security_use=%d, time_stamp=%d, trans_seq=%d, data=%s""",
             group_id, cluster_id, src_addr, src_ep, dst_ep, was_broadcast,
             lqi, security_use, time_stamp, trans_seq, repr(data))
     
@@ -916,7 +916,7 @@ def zpi_test_init():
     return (zpi, serial_port)
     
 def zpi_test_all():
-    ''' transmit a message to remote device '''    
+    """ transmit a message to remote device """    
     global logical_type
     global device_list
     

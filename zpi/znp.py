@@ -1,13 +1,13 @@
-''' 
+""" 
     CC2530-ZNP class module 
-'''
+"""
 import struct
 import threading
 import time
 
 import logging
 
-log = logging.getLogger('drivers.cc2530_zpi.znp')
+log = logging.getLogger('zpi.znp')
 console = logging.StreamHandler()
 formatter = logging.Formatter('[%(asctime)s] %(message)s')
 console.setFormatter(formatter)
@@ -23,12 +23,13 @@ def set_debug(onoff):
         log.setLevel(logging.INFO)
 
 def _len_calc(x_value, expr = 'x'):
-    ''' 
+    """ 
         calculate the len with a customized expression, such as : x*2. 
         x_value must be properly provided
-    '''
+    """
+    #noinspection PyUnusedLocal
     x = x_value
-    x = x               #prevent 'unused' warning
+
     return eval(expr)
     
 class ThreadQuitException(Exception):
@@ -39,7 +40,7 @@ class CommandFrameException(KeyError):
 
     
 class Znp(threading.Thread):
-    '''
+    """
         ZNP class (as Zpi Base) 
         
         ZNP commands are in 4 types: POLL (SPI only), SREQ, AREQ, SRSP.
@@ -48,7 +49,7 @@ class Znp(threading.Thread):
             response.
         SRSP is a synchronous response. It's only sent in response to a SREQ 
             command.
-    '''
+    """
     def __init__(self, ser, callback = None):
         super(Znp, self).__init__()
         self.serial = ser
@@ -61,28 +62,28 @@ class Znp(threading.Thread):
             self.start()
             
     def halt(self, timeout = None):
-        '''
+        """
             halt the thread
-        '''
+        """
         if self._callback:
             self._thread_continue = False
             self.join(timeout)
             
     def _write(self, data):
-        '''
+        """
             write data to serial
-        '''
+        """
         frame = ZnpFrame(data).output()
         log.debug('TX: %s' % frame.encode('hex'))
         self.serial.write(frame)
 
         
     def run(self):
-        '''
+        """
             this method overrides threading.Thread.run() and is automatically 
             called by self.start()
-        '''
-        rx_data = None
+        """
+        #rx_data = None
         while True:
             try:
                 #self._callback(self.wait_read_frame())
@@ -95,14 +96,14 @@ class Znp(threading.Thread):
                 log.info('Znp thread exited.')
                 break
             except Exception as e:
-                log.warning('Znp:{}'.format(e))
+                log.warning('Znp:{0}'.format(e))
                 continue
             
     def _wait_for_frame(self):
-        '''
+        """
             read from the serial port until a valid ZNP frame arrives. It will 
             then return the binary data contained within the frame
-        '''
+        """
         frame = ZnpFrame()
         
         while True:
@@ -148,9 +149,9 @@ class Znp(threading.Thread):
                 frame = ZnpFrame()
                 
     def _build_frame(self, cmd, **kwargs):
-        '''
+        """
             this function must be used with a pre-defined dictionary
-        '''
+        """
         try:
             cmd_spec = self.znp_commands[cmd]
         except AttributeError:
@@ -212,9 +213,9 @@ class Znp(threading.Thread):
         return packet
         
     def _split_response(self, data):
-        '''
+        """
             convert data received into a dictionary
-        '''
+        """
         packet_id = data[0:2] #CMD0,CMD1
         
         #print 'Received packet id: %s' % packet_id.encode('hex')
@@ -227,10 +228,9 @@ class Znp(threading.Thread):
         except KeyError:
             #check to see if response can be found in tx commands list
             for cmd_name, cmd in list(self.znp_commands.items()):
-                if cmd[0]['default'] == data[0:1]:
-                    raise CommandFrameException('''Incomming frame with id %s 
-                        looks like a command frame of type '%s' but with wrong 
-                        data''' % (data[0], cmd_name))
+                if cmd[0]['default'] == data[0] and cmd[1]['default'] == data[1]:
+                    raise CommandFrameException('Incomming frame with id 0x%s looks like a command frame of '
+                                                'type %s but with wrong data' % (data[0:2].encode('hex'), cmd_name))
             raise KeyError('Unrecognized response packet with cmd: %s' % data[0:2].encode('hex'))
         
         index = 2  #start from 2 because we have 2 command bytes
@@ -282,7 +282,7 @@ class Znp(threading.Thread):
         if index < len(data):
             log.error ('Data: %s' % data.encode('hex'))
             raise ValueError('Response packet is longer than expected.'
-                'Expected: %d, got: %d bytes. ''' % (index, len(data)))
+                'Expected: %d, got: %d bytes. ' % (index, len(data)))
             
         # Apply parsing rules if any exist
         if 'parsing' in packet:
@@ -296,23 +296,23 @@ class Znp(threading.Thread):
         return info
             
     def send(self, cmd, **kwargs):
-        '''
+        """
             send data to radio
-        '''
+        """
         self._write(self._build_frame(cmd, **kwargs))
         log.debug('TX SREQ/AREQ: %s' % cmd)
         
     def wait_read_frame(self):
-        '''
+        """
             wait for reading a valid frame from radio
-        '''
+        """
         frame = self._wait_for_frame()
         return self._split_response(frame.data)
     
     def __getattr__(self, name):
-        '''
-            
-        '''
+        """
+            override for sub-class attribute check
+        """
         if name == 'znp_commands':
             raise NotImplementedError('ZNP command specification could not be found.')
         

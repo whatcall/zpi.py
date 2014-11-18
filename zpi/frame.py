@@ -1,14 +1,14 @@
-'''
+"""
     CC2530-ZNP frame process module
-'''
+"""
 
 import struct
 
 class ZnpFrame(object):
-    ''' 
+    """ 
         represent a frame of data to be sent to or received from an CC2530-ZNP 
         device
-    '''
+    """
     #Start of frame
     SOF = b'\xfe'
     
@@ -48,11 +48,11 @@ class ZnpFrame(object):
         self.raw_data = b''
         
     def checksum(self):
-        '''
+        """
             FCS byte is calculated with XOR method.
             
             FCS: contain all bytes before FCS excluding SOF
-        '''
+        """
         if self.data is not None and len(self.data) > 0:
             fcs = self.len_data()  #first XOR with len byte
             for i in range(0, len(self.data)):
@@ -62,17 +62,17 @@ class ZnpFrame(object):
             raise ValueError('self.data is empty!')
         
     def verify(self, chksum):
-        '''
+        """
             verify the data with a given chksum
-        '''
+        """
         
         return self.checksum() == chksum
     
     def len_data(self):
-        '''
+        """
             count number of bytes contained in data
             CMD0,CMD1 are not included
-        '''
+        """
         if len(self.data) >= ZnpFrame.LEN_CMD:
             count = len(self.data) - ZnpFrame.LEN_CMD
             return count
@@ -80,37 +80,37 @@ class ZnpFrame(object):
             raise ValueError('Data content is not long enough!')
         
     def len_bytes(self):
-        '''
+        """
             count number of bytes contained in data and return as byte
             CMD0,CMD1 are not included
-        '''
+        """
         return struct.pack('<B', self.len_data())
 
     def output(self):
-        '''
+        """
         
-        '''
+        """
         data = self.len_bytes() + self.data + self.checksum()
         
         return ZnpFrame.SOF + data
     
     @staticmethod
     def escaped():
-        '''
+        """
         
-        '''
+        """
         raise NotImplementedError
     
     def fill(self, byte):
-        '''
+        """
             adds the given byte to this frame
-        '''
+        """
         self.raw_data += byte
         
     def remaining_bytes(self):
-        '''
+        """
             calculate the remaining byte 
-        '''
+        """
         #LEN:1, Command: 2, Data:0~250, FCS:1
         remaining = 4   #the default minimal value (no fcs)
         
@@ -125,15 +125,15 @@ class ZnpFrame(object):
         return remaining - len(self.raw_data)
             
     def parse(self):
-        '''
+        """
             parse raw_data:
                 - get the data content (len byte not included)
                 - verify the checksum
             I sense the value is not telli
-        '''
+        """
         if len(self.raw_data) < 4:
-            raise ValueError('''parse() may only be called on a frame containing 
-                at least 3 bytes of raw data (see fill())''')
+            raise ValueError("""parse() may only be called on a frame containing 
+                at least 3 bytes of raw data (see fill())""")
         
         #1st byte is the length
         raw_len = self.raw_data[1:2]

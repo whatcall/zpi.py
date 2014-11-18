@@ -1,11 +1,11 @@
-'''
+"""
     ZPI command and commands structure module
-'''
+"""
 
 __all__ = ['ZpiCommand', 'ZpiCommands']
 
 class ZpiCommand(object):
-    ''' ZPI command enumeration class '''    
+    """ ZPI command enumeration class """
     
     #Request command enumerations ->
     SYS_RESET_REQ = 'SYS_RESET_REQ'
@@ -214,12 +214,12 @@ class ZpiCommand(object):
         
                 
 class ZpiCommands(object):
-    '''
+    """
         Implemented according to CC2530-ZNP interface specification, Z-stack 2.5.1a
         Basically, ZNP frame is very similar to XBee API frame
         XBee API format    : SOF:1, LEN:2, CMD_ID:1, CMD_DATA:n, CHKSUM:1
         CC2530-ZNP format  : SOF:1, LEN:1, CMD0:1, CMD1:1, DATA:n, FCS:1
-    '''
+    """
     znp_commands = {
         #SYS interface
         ZpiCommand.SYS_RESET_REQ:[
@@ -412,7 +412,7 @@ class ZpiCommands(object):
             {'name': 'trans_id',    'len': 1,   'default': None},   
             {'name': 'options',     'len': 1,   'default': None}, 
             {'name': 'radius',      'len': 1,   'default': None},   
-            {'name': 'len',         'len': 1,   'default': None}, 
+            {'name': 'len',         'len': 2,   'default': None},
             {'name': 'data',        'len': None,'default': None}, 
             ],   
                     
@@ -551,7 +551,8 @@ class ZpiCommands(object):
             {'name': 'cmd0',        'len': 1,   'default': b'\x25'},
             {'name': 'cmd1',        'len': 1,   'default': b'\x20'},  
             {'name': 'dst_addr',    'len': 2,   'default': None},
-            {'name': 'local_coord', 'len': 2,   'default': b'\x00\x00'},  
+            {'name': 'local_coord', 'len': 2,   'default': b'\x00\x00'},
+            {'name': 'ieee',        'len': 8,    'default': b'\x00\x00\x00\x00\x00\x00\x00\x00'},
             {'name': 'endpoint',    'len': 1,   'default': None},
             {'name': 'profile_id', 'len': 2,   'default': None},
             {'name': 'in_cluster_num',    'len': 1,   'default': None},
@@ -624,6 +625,7 @@ class ZpiCommands(object):
         ZpiCommand.ZDO_MGMT_PERMIT_JOIN_REQ:[
             {'name': 'cmd0',        'len': 1,   'default': b'\x25'},
             {'name': 'cmd1',        'len': 1,   'default': b'\x36'},  
+            {'name': 'addr_mode',   'len': 1,   'default': None},       #update for Z-stack 2.6.1
             {'name': 'dst_addr',    'len': 2,   'default': None},
             {'name': 'duration',    'len': 1,   'default': None},  
             {'name': 'tc_significance',    'len': 1,   'default': None}, 
@@ -1369,7 +1371,7 @@ class ZpiCommands(object):
                 {'name': 'match_list',          'len': None},
                 ]
             },   
-        b'\x45\x87':{ 
+        b'\x45\x90':{
             'name': ZpiCommand.ZDO_COMPLEX_DESC_RSP,
             'structure':[
                 {'name': 'src_addr',            'len': 2},
@@ -1379,7 +1381,7 @@ class ZpiCommands(object):
                 {'name': 'complex_list',        'len': None},
                 ]
             },   
-        b'\x45\x88':{ 
+        b'\x45\x91':{
             'name': ZpiCommand.ZDO_USER_DESC_RSP,
             'structure':[
                 {'name': 'src_addr',            'len': 2},
@@ -1389,7 +1391,7 @@ class ZpiCommands(object):
                 {'name': 'user_descriptor',     'len': None},
                 ]
             },          
-        b'\x45\x89':{ 
+        b'\x45\x94':{
             'name': ZpiCommand.ZDO_USER_DESC_CONF,
             'structure':[
                 {'name': 'src_addr',            'len': 2},
@@ -1397,7 +1399,7 @@ class ZpiCommands(object):
                 {'name': 'nwk_addr',            'len': 2},
                 ]
             },        
-        b'\x45\x8a':{ 
+        b'\x45\x95':{
             'name': ZpiCommand.ZDO_SERVER_DESC_RSP,
             'structure':[
                 {'name': 'src_addr',            'len': 2},
@@ -1475,6 +1477,7 @@ class ZpiCommands(object):
             'structure':[
                 {'name': 'src_addr',            'len': 2},
                 {'name': 'status',              'len': 1},
+                #{'name': 'dummy',               'len': 3}     #as tested, ZDO_MGMT_LEAVE_RSP return 3 more 0x00 bytes if the remote device doesn't support generate this request
                 ]
             },        
         b'\x45\xb5':{ 
